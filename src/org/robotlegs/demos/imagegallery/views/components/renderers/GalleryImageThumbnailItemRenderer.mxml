@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Inversion of Control/Dependency Injection Using Robotlegs
+	Image Gallery
+	
+	Any portion of this demonstration may be reused for any purpose where not 
+	licensed by another party restricting such use. Please leave the credits intact.
+	
+	Joel Hooks
+	http://joelhooks.com
+	joelhooks@gmail.com 
+-->
+<s:ItemRenderer 
+	xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	width="0" 
+	height="0" 
+	x="0" y="0"
+	selected="{this.image.selected}">
+
+	<fx:Script>
+		<![CDATA[
+			
+			import gs.TweenLite;
+			
+			import org.robotlegs.demos.imagegallery.events.GalleryImageEvent;
+			import org.robotlegs.demos.imagegallery.models.vo.GalleryImage;
+			
+			[Bindable] protected var image:GalleryImage;
+			
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				this.image = value as GalleryImage;
+				if(image)
+				{
+					TweenLite.to(this, 1, {x:image.finalPositionX,y:image.finalPositionY})
+					//this.x = image.positionX;
+					//this.y = image.positionY;
+				}
+				TweenLite.to(myImage, 0.5, {alpha:1})
+			}		
+			
+			protected function onImageLoaded(e:Event):void 
+			{
+				if(image.positionX<0)
+				{
+					trace("onImageLoaded", image.URL,  myImage.bitmapData.width,  myImage.bitmapData.height);
+					this.owner.dispatchEvent(new GalleryImageEvent(GalleryImageEvent.SET_GALLERY_IMAGE_SIZE, image, myImage.bitmapData.width,myImage.bitmapData.height, myImage.bitmapData));
+				}
+			}
+			
+			protected function clickHandler(event:MouseEvent):void
+			{
+				TweenLite.to(myImage, 0.5, {alpha:0.05, onComplete:endClickHandler})
+			}
+			
+			protected function endClickHandler():void
+			{
+				this.owner.dispatchEvent(new GalleryImageEvent(GalleryImageEvent.SELECT_GALLERY_IMAGE, image));
+			}
+		]]>
+	</fx:Script>
+
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected"/>
+	</s:states>
+	
+	<s:Image 
+		id="myImage"
+		source="{image.GetImage()}" 
+		click="clickHandler(event)" complete="onImageLoaded(event)" 
+		enableLoadingState="true"/>
+</s:ItemRenderer>
